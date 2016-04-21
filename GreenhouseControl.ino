@@ -1,14 +1,14 @@
-
-
+#include <SparkFunHTU21D.h>
 #include <LiquidCrystal.h>
 #include <Wire.h>
-#include "SparkFunHTU21D.h"
 
 LiquidCrystal lcd(12,11,5,4,3,2);
 
+HTU21D hSensor;
+
 const int temperaturePin = A0;
-const int bulbPin;
-const int fanPin1;
+int bulbPin;
+int fanPin1;
 
 int tempMin;
 int tempMax;
@@ -19,10 +19,13 @@ void setup()
 {
   lcd.begin(16,2);
   Serial.begin(9600);
+  hSensor.begin();
 }
 
 float humd;
 float voltage, degreesC, degreesF;
+float humidity = 50.0;
+int state;
 
 void loop()
 {
@@ -34,27 +37,38 @@ void loop()
 
   //Read humidity information from sensors, do necessary conversions
     //*****TODO*******//
+    if (random(1,10)>8)
+      humidity += random(-1,2); //Test code since the sensor is 
 
+    //float humidity = hSensor.readHumidity();
+   // float degreesC = hSensor.readTemperature();
+
+  // Logic to determine what temperature state we are in, what action needs to be taken
   if (degreesC > tempIdeal)
     //disable heat
   if (degreesC < tempIdeal)
-    //disable cooling
+    //disable fan
   if (degreesC < tempMin)
-    //enable heat 
+    //enable heater
   if (degreesC > tempMax)
-    //enable cooling
-
+    //enable fan
 
   //** Print live data to the LCD screen **//
-  lcd.print("Degrees F: ");
-  lcd.print(degreesF);
+  lcd.print(" ");//For some reason this statement is ignored?
+  lcd.print("Temp: ");
+  lcd.print(degreesC);
+  lcd.write(223);
+  lcd.print("C");
+  lcd.setCursor(0,1);
+  lcd.print("Humidity: ");
+  lcd.print(round(humd));
+  lcd.print("%");
 
   //Print humidity info
   
-  delay(1000); //Delay should be longer in release version, 
+  delay(10000); //Delay should be longer in release version, 
    
 }
-
 
 float getVoltage(int pin)
 {  
