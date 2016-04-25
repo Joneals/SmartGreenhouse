@@ -1,14 +1,15 @@
-#include <SparkFunHTU21D.h>
 #include <LiquidCrystal.h>
-#include <Wire.h>
 
 LiquidCrystal lcd(12,11,5,4,3,2);
 
-HTU21D hSensor;
 
-const int temperaturePin = A0;
-int bulbPin;
-int fanPin1;
+int pinTemperature = A0;
+int pinPhotocell = A1;
+int pinBulb;
+int pinFan;
+int pinLED;
+int darkvalue;
+
 
 int tempMin;
 int tempMax;
@@ -19,39 +20,39 @@ void setup()
 {
   lcd.begin(16,2);
   Serial.begin(9600);
-  hSensor.begin();
 }
 
-float humd;
 float voltage, degreesC, degreesF;
-float humidity = 50.0;
-int state;
+int bulb, fan, led;
 
 void loop()
 {
   lcd.setCursor(0,0);
   //** Read temperature sensors, perform necessary conversions **// 
-  voltage = getVoltage(temperaturePin);
+  voltage = getVoltage(pinTemperature);
   degreesC = (voltage - 0.5) * 100.0;
   degreesF = degreesC * (9.0/5.0) + 32.0;
 
-  //Read humidity information from sensors, do necessary conversions
-    //*****TODO*******//
-    if (random(1,10)>8)
-      humidity += random(-1,2); //Test code since the sensor is 
-
-    //float humidity = hSensor.readHumidity();
-   // float degreesC = hSensor.readTemperature();
+  // Read light values
+  int darkness = analogRead(pinPhotocell);
 
   // Logic to determine what temperature state we are in, what action needs to be taken
   if (degreesC > tempIdeal)
-    //disable heat
+    bulb = LOW;
   if (degreesC < tempIdeal)
-    //disable fan
+    fan = LOW;
   if (degreesC < tempMin)
-    //enable heater
+    bulb = HIGH;
   if (degreesC > tempMax)
-    //enable fan
+   fan = HIGH;
+
+  if (darkness > darkvalue)
+    led = HIGH;
+
+   digitalWrite(pinFan, fan);
+   digitalWrite(pinBulb, bulb);
+   digitalWrite(pinLED, led);
+   
 
   //** Print live data to the LCD screen **//
   lcd.print(" ");//For some reason this statement is ignored?
@@ -60,9 +61,6 @@ void loop()
   lcd.write(223);
   lcd.print("C");
   lcd.setCursor(0,1);
-  lcd.print("Humidity: ");
-  lcd.print(round(humd));
-  lcd.print("%");
 
   //Print humidity info
   
@@ -74,5 +72,7 @@ float getVoltage(int pin)
 {  
   return (analogRead(pin) * 0.004882814); 
 }
+
+
 
 
